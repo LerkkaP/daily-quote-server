@@ -1,7 +1,7 @@
 const express = require("express")
 const axios = require("axios")
 const cron = require("node-cron")
-const moment = require('moment-timezone');
+const moment = require("moment-timezone");
 
 require('dotenv').config()
 
@@ -12,33 +12,34 @@ const app = express();
 app.use(express.json());
 
 const PORT = 3000;
-
-app.get("/", (_, res) => {
-  res.send("hello world");
-});
-
 const timezone = 'America/Chicago'
+
+let quote;
+
+const fetchQuote = async () => {
+  try {
+    const response = await axios.get(`${api_base_url}${api_key}`);
+    quote = response.data
+  } catch (error) {
+    console.error('Error occurred while fetching the quote:', error);
+  }
+};
 
 cron.schedule('0 0 * * *', () => {
   const now = moment().tz(timezone);
   if (now.hour() === 0 && now.minute() === 0) {
-    /**
-   * @todo make api request and cache the result for 24 hours
-   */
+      fetchQuote()
     }
   }, {
-    timezone 
-  });
-
-app.get("/quote", async (_, res) => {
-    try {   
-      const response = await axios.get(`${api_base_url}${api_key}`)
-      res.send(response.data)
-    } catch (error) {
-      res.status(500).json({ error: 'There was an error in fetching the quote.' })
-    }
+  timezone 
 });
+  
+// Initial fetch when the server starts
+fetchQuote();
 
+app.get("/quote", (req, res) => {
+  res.send(quote);
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
