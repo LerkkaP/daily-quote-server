@@ -2,6 +2,7 @@ const express = require("express")
 const axios = require("axios")
 const cron = require("node-cron")
 const moment = require("moment-timezone");
+var cors = require('cors')
 
 require('dotenv').config()
 
@@ -9,6 +10,7 @@ const api_key = process.env.API_KEY;
 const api_base_url = process.env.API_BASE_URL;
 
 const app = express();
+app.use(cors())
 app.use(express.json());
 
 const PORT = 3000;
@@ -18,7 +20,8 @@ let quote;
 
 const fetchQuote = async () => {
   try {
-    const response = await axios.get(`${api_base_url}${api_key}`);
+    //const response = await axios.get(`${api_base_url}${api_key}`);
+    const response = await axios.get(`${api_base_url}`);
     quote = response.data
   } catch (error) {
     console.error('Error occurred while fetching the quote:', error);
